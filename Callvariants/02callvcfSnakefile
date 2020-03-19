@@ -1,0 +1,77 @@
+#call snp
+
+
+configfile: "/gss1/home/chenlei20180111/data/Ttr/script/toAnasTtrpop.yaml"
+REF = '/gss1/home/chenlei20180111/data/ref/Tetranychus_urticae/Tetranychus_urticae.main_genome_200909.scaffolds.fasta'
+
+rule all:
+	input:
+		"/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.filter.vcf.gz"
+#rule gatk3_realign:
+	#before this step, RealignerTargetCreator must be conducted to create targetintervals
+#	input:
+#		"/home/chenlei/data/TtrWGS/output/BWA/useful/{sample}_markdup_sorted.bam",
+#	output:
+#		protected("/home/chenlei/data/TtrWGS/output/BWA/realign/{sample}_markdup_sorted.realign.bam")
+#	threads: 5
+#	shell:
+#		"(/opt/sysoft/jdk1.8.0_191/bin/java -jar /opt/biosoft/gatk-3.8/GenomeAnalysisTK.jar -T IndelRealigner  -R {REF}  -I {input} -o {output} --targetIntervals /home/chenlei/data/TtrWGS/output/BWA/useful/all_samples.intervals) 2> log"
+
+rule haplotypecall:
+	input:
+		"/gss1/home/chenlei20180111/data/Ttr/output/BWA/{sample}_markdup_sorted.bam"
+	output:
+		protected("/gss1/home/chenlei20180111/data/Ttr/output/vcf/{sample}.g.vcf")
+	shell:
+		"(gatk  HaplotypeCaller -R {REF} -I {input} -ERC GVCF -O {output} ) 2>log"
+
+rule combine:
+	input: expand("/gss1/home/chenlei20180111/data/Ttr/output/vcf/{sample}.g.vcf",sample=config["samples"])
+	output: "/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.combine.g.vcf"
+	shell:
+		"gatk CombineGVCFs -R {REF} `ls {input}| sed 's:^:-V :'| xargs` -O {output}"
+
+rule jointgenotype:
+	input: "/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.combine.g.vcf"
+	output: "/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.raw.vcf"
+	shell:
+		"gatk GenotypeGVCFs -R {REF} -V {input} --heterozygosity 0.005 -O {output}"
+
+rule compress_index:
+	input: rules.jointgenotype.output
+	output:	"/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.raw.vcf.gz"
+	shell:
+		"bgzip -f {input} && tabix -p vcf {output}"
+		
+rule splitsnp:
+	input: rules.compress_index.output
+	output:temp("/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.snp.vcf.gz")
+	shell:
+		"gatk SelectVariants -R {REF} -select-type SNP -V {input} -O {output}"
+
+rule splitindel:
+        input: rules.compress_index.output
+        output:temp("/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.indel.vcf.gz")
+        shell:
+                "gatk SelectVariants -R {REF} -select-type INDEL -V {input} -O {output}"
+
+
+rule filtersnp:
+	input: rules.splitsnp.output
+	output: temp("/gss1/home/chenlei20180111/data/Ttr/output/vcf/filter.snp.vcf.gz")
+	params:  filter="--filter-expression 'QD < 2.0 || MQ < 30.0 || FS > 60.0 || SOR > 5.0 ' --filter-name 'Ttrfilter'"
+	shell:
+		"gatk VariantFiltration -R {REF} -V {input} -O {output} {params.filter}"
+
+rule filterindel:
+        input: rules.splitindel.output
+        output: temp("/gss1/home/chenlei20180111/data/Ttr/output/vcf/filter.indel.vcf.gz")
+        params:  filter="--filter-expression 'QD < 2.0  || FS > 100.0 || SOR > 5.0 ' --filter-name 'Ttrfilter'"
+        shell:
+                "gatk VariantFiltration -R {REF} -V {input} -O {output} {params.filter}"
+
+rule mergevcf:
+	input: snp=rules.filtersnp.output,indel=rules.filterindel.output
+	output:  "/gss1/home/chenlei20180111/data/Ttr/output/vcf/163samples.filter.vcf.gz"
+	shell:
+		"gatk MergeVcfs -I {input.snp} -I {input.indel} -O {output}"

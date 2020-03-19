@@ -1,0 +1,36 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name   #dist.#min  #max 
+//all Ns are in number of haploid individuals
+1  NPOPA$       logunif     100  100000000   output
+1  NPOPB$      logunif      100  10000   output
+1  NPOPC$      logunif      100  100000000   output
+1  NPOPD$       logunif     100  100000000   output
+1  NPOPE$       logunif     100  100000000   output
+1  NG4     logunif     100  100000000   output
+1  NG2     logunif     100  100000000   output
+1  NG1     logunif     100  100000000   output
+1  NG3     logunif     100  100000000  output
+1  TE$          logunif     100  1000000   output
+1  TED$          logunif    100  10000000   output
+1  TDC$         logunif     100  10000000   output
+1  TCB$         logunif     100  10000000   output
+1  TBA$         logunif     100  10000000   output
+0  ASY            unif      0    1          output
+
+[RULES]
+
+
+[COMPLEX PARAMETERS]
+1  TF$ = TE$ - 1                   output
+1  TD$ = TE$ + TED$ 		   output
+1  TC$ = TD$ + TDC$                output
+1  TB$ = TC$ + TCB$                output
+1  TA$ = TB$ + TBA$                output
+0  Res_E$ = NPOPE$/NG2    hide
+0  Res_D$ = NPOPD$/NG4     hide
+0  Res_C$ = NPOPC$/NPOPD$       hide
+0  Res_B$ = NPOPB$/NPOPC$       hide
+0  Res_A$ = NPOPA$/NPOPB$       hide

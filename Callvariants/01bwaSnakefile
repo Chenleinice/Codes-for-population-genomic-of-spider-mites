@@ -1,0 +1,46 @@
+#bwa mem to tu, under default 
+
+configfile: "/home/chenlei/data/TtrWGS/script/toAnasTtrpop.yaml"
+
+rule all:
+	input:
+		expand("/home/chenlei/data/TtrWGS/output/BWA/{sample}_markdup_sorted.bam",sample=config['samples']),expand("/home/chenlei/data/TtrWGS/output/BWA/{sample}_markdup_sorted.bam.bai",sample=config['samples'])
+
+rule bwa_map:
+	input:
+		"/home/chenlei/data/TtrWGS/input/cleandata/{sample}_1.clean.fq.gz",
+		"/home/chenlei/data/TtrWGS/input/cleandata/{sample}_2.clean.fq.gz"
+	output:
+		temp("/home/chenlei/data/TtrWGS/output/BWA/{sample}.bam")
+	params:
+		rg=r"@RG\tID:{sample}\tPL:ILLUMINA\tSM:{sample}"
+	log:
+		"logs/bwa/{sample}.log"
+	threads:20
+	shell:
+		"(bwa mem -R '{params.rg}' -t {threads} -M /home/chenlei/data/ref/Tu/Tetranychus_urticae.main_genome_200909.scaffolds.fasta {input} | samtools view -Sb -> {output}) 2> {log}"
+
+rule samtools_sort:
+	input:
+		"/home/chenlei/data/TtrWGS/output/BWA/{sample}.bam"
+	output:
+		temp("/home/chenlei/data/TtrWGS/output/BWA/{sample}_sorted.bam")
+	threads: 10
+	shell:
+		"samtools sort -T /home/chenlei/data/TtrWGS/output/BWA/{wildcards.sample} -@ {threads} -O bam {input} > {output}"
+
+rule MarkDuplicate:
+	input:
+		"/home/chenlei/data/TtrWGS/output/BWA/{sample}_sorted.bam"
+	output:
+		protected("/home/chenlei/data/TtrWGS/output/BWA/{sample}_markdup_sorted.bam")
+	shell:
+		"gatk MarkDuplicates -I {input} -O {output} -M /home/chenlei/data/TtrWGS/output/BWA/markdup_metrics.txt"
+
+rule samtools_index:
+	input:
+		"/home/chenlei/data/TtrWGS/output/BWA/{sample}_markdup_sorted.bam"
+	output:
+		"/home/chenlei/data/TtrWGS/output/BWA/{sample}_markdup_sorted.bam.bai"
+	shell:
+		"samtools index {input}"

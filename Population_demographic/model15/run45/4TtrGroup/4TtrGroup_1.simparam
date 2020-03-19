@@ -1,0 +1,103 @@
+Simulation parameters for current simulations
+=============================================
+
+
+Deme sizes
+Deme 0	1932
+Deme 1	14357
+Deme 2	388
+Deme 3	97639825
+
+
+Sample sizes
+Deme 0	94
+Deme 1	98
+Deme 2	82
+Deme 3	62
+
+Sample ages
+Deme 0	0
+Deme 1	0
+Deme 2	0
+Deme 3	0
+
+Growth rates
+Deme 0	0
+Deme 1	0
+Deme 2	0
+Deme 3	0
+
+
+Historical events
+Event 0
+
+#Time             : 242364
+#Source           : 1
+#Sink             : 0
+#Migrants         : 0.205833
+#New size         : 1
+#New growth rate  : 0
+#New migr. matrix : 0
+
+Event 1
+
+#Time             : 242365
+#Source           : 1
+#Sink             : 3
+#Migrants         : 1
+#New size         : 5.71638
+#New growth rate  : 0
+#New migr. matrix : 0
+
+Event 2
+
+#Time             : 243609
+#Source           : 3
+#Sink             : 2
+#Migrants         : 1
+#New size         : 1.25973e-06
+#New growth rate  : 0
+#New migr. matrix : 0
+
+Event 3
+
+#Time             : 245455
+#Source           : 2
+#Sink             : 0
+#Migrants         : 1
+#New size         : 28397.2
+#New growth rate  : 0
+#New migr. matrix : 0
+
+Event 4
+
+#Time             : 248060
+#Source           : 0
+#Sink             : 0
+#Migrants         : 0
+#New size         : 4.60941e-05
+#New growth rate  : 0
+#New migr. matrix : 0
+
+Event 5
+
+#Time             : 248665
+#Source           : 0
+#Sink             : 0
+#Migrants         : 0
+#New size         : 265.708
+#New growth rate  : 0
+#New migr. matrix : 0
+
+
+
+Number of independent loci to simulate : 1
+With the same chromosomal structure
+
+Number of linkage blocks to simulate in structure 1: 1
+
+   1 partially linked FREQ data:
+      recombination and mutation rates                  : 0.0000000000   0.0000000030
+   Do not output expected MAF spectrum
+  Output expected DAF spectrum
+
